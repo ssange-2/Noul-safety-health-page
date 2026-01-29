@@ -1,38 +1,131 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>Noul Safety&Health Platform</title>
+<meta charset="UTF-8" />
+<title>안전보건 정밀진단 체크리스트</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    vertical-align: top;
+    text-align: center;
+  }
+  th {
+    background-color: #f4f4f4;
+  }
+  textarea {
+    width: 100%;
+    height: 50px;
+  }
+  .radio-group {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+</style>
 </head>
+
 <body>
 
-  <h1>Noul Safety&Health Platform</h1>
+<h1>안전보건 정밀진단 체크리스트</h1>
 
-  <h2>📌안전보건경영방침</h2>
-<textarea id="tbm" rows="30" cols="100" placeholder="오늘 작업 내용과 위험요인을 입력하세요"></textarea>
+<table>
+  <thead>
+    <tr>
+      <th>번호</th>
+      <th>점검항목</th>
+      <th>점검내용</th>
+      <th>점검결과</th>
+      <th>특이사항</th>
+    </tr>
+  </thead>
+  <tbody id="checklist-body"></tbody>
+</table>
 
 <script>
-  const tbm = document.getElementById("tbm");
+  const checklistItems = Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    title: `점검항목 ${i + 1}`,
+    description: `점검내용 ${i + 1}`
+  }));
+  // ↑ 나중에 100개까지 늘리면 됨
 
-  tbm.value = localStorage.getItem("tbmText") || "";
+  const tbody = document.getElementById("checklist-body");
 
-  tbm.addEventListener("input", () => {
-    localStorage.setItem("tbmText", tbm.value);
+  function loadData(id) {
+    return JSON.parse(localStorage.getItem(`check_${id}`)) || {};
+  }
+
+  function saveData(id, data) {
+    localStorage.setItem(`check_${id}`, JSON.stringify(data));
+  }
+
+  checklistItems.forEach(item => {
+    const saved = loadData(item.id);
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${item.id}</td>
+      <td>${item.title}</td>
+      <td>${item.description}</td>
+      <td>
+        <div class="radio-group">
+          ${["양호", "미흡", "불량", "해당없음"].map(value => `
+            <label>
+              <input type="radio" name="result_${item.id}" value="${value}">
+              ${value}
+            </label>
+          `).join("")}
+        </div>
+      </td>
+      <td>
+        <textarea placeholder="특이사항 입력"></textarea>
+      </td>
+    `;
+
+    const radios = tr.querySelectorAll(`input[name="result_${item.id}"]`);
+    const textarea = tr.querySelector("textarea");
+
+    if (saved.result) {
+      radios.forEach(r => {
+        if (r.value === saved.result) r.checked = true;
+      });
+    }
+    if (saved.note) textarea.value = saved.note;
+
+    radios.forEach(radio => {
+      radio.addEventListener("change", () => {
+        saveData(item.id, {
+          result: radio.value,
+          note: textarea.value
+        });
+      });
+    });
+
+    textarea.addEventListener("input", () => {
+      const checked = [...radios].find(r => r.checked);
+      saveData(item.id, {
+        result: checked ? checked.value : "",
+        note: textarea.value
+      });
+    });
+
+    tbody.appendChild(tr);
   });
 </script>
-
-  <h2>📋 현장 점검 체크리스트</h2>
-  <ul>
-    <li><input type="checkbox"> 보호구 착용</li>
-    <li><input type="checkbox"> 작업 전 위험요인 확인</li>
-    <li><input type="checkbox"> 비상구 확보</li>
-  </ul>
-
-  <h2>🧪 연구실 보호구 기준</h2>
-  <p>
-    화학실: 보안경, 장갑, 가운<br>
-    분석실: 장갑, 마스크
-  </p>
 
 </body>
 </html>
