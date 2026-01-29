@@ -56,12 +56,23 @@
 </table>
 
 <script>
-  const checklistItems = Array.from({ length: 10 }, (_, i) => ({
-    id: i + 1,
-    title: `점검항목 ${i + 1}`,
-    description: `점검내용 ${i + 1}`
-  }));
-  // ↑ 나중에 100개까지 늘리면 됨
+  const checklistItems = [
+    {
+      id: 1,
+      title: "비상구가 항상 개방 가능하도록 유지되고 있는가?",
+      description: "비상구 앞에 적치물, 잠금장치 등이 설치되어 있지 않은지 확인"
+    },
+    {
+      id: 2,
+      title: "소화기가 지정된 위치에 비치되어 있는가?",
+      description: "소화기 위치표시, 사용 가능 상태, 압력 정상 여부 확인"
+    },
+    {
+      id: 3,
+      title: "전기 분전반 주변에 위험요인이 없는가?",
+      description: "분전반 주변 적치물, 잠금상태, 감전 위험요소 여부 확인"
+    }
+  ];
 
   const tbody = document.getElementById("checklist-body");
 
